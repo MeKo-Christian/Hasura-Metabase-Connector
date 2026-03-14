@@ -170,8 +170,8 @@ jobs:
       - name: Run integration tests
         run: clojure -M:test-integration
         env:
-          HASURA_TEST_URL: http://localhost:8080
-          HASURA_TEST_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+          HASURA_URL: http://localhost:8080
+          HASURA_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
 
       - name: Stop stack
         if: always()

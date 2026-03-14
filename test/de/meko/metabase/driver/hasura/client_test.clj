@@ -136,6 +136,22 @@
         (is (= :hasura.error/graphql (:hasura/error-type err)))
         (is (seq (:errors err)))))))
 
+(deftest client-graphql-partial-errors
+  (testing "graphql-post throws :hasura.error/graphql when response has both :data and :errors (strict MVP behavior)"
+    ;; Hasura can return a partial result: some data fields succeed while others
+    ;; fail.  The driver deliberately treats any :errors presence as a failure
+    ;; in the MVP, rather than surfacing partial data silently.
+    (with-fake-routes
+      {(str fixtures/base-url "/v1/graphql")
+       (fake-json-post 200 {:data   {:authors [{:id 1}]}
+                            :errors [{:message  "field 'nonexistent' not found"
+                                      :extensions {:code "validation-failed"}}]})}
+      (let [err (try (client/graphql-post test-cfg {:query "{ authors { id nonexistent } }"})
+                     nil
+                     (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+        (is (= :hasura.error/graphql (:hasura/error-type err)))
+        (is (seq (:errors err)))))))
+
 ;; ---------------------------------------------------------------------------
 ;; graphql-post — network error paths (injected via with-redefs)
 ;; ---------------------------------------------------------------------------

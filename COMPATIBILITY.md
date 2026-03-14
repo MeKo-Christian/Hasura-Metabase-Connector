@@ -11,7 +11,7 @@
 
 ## MVP Scope
 
-The v0.1.0 release is **native-query-first and read-only**.
+The v0.1.0 release is **read-only**.
 
 ### Supported
 
@@ -22,9 +22,28 @@ The v0.1.0 release is **native-query-first and read-only**.
 - Optional enriched discovery via Metadata API (`/v1/metadata`) when accessible
 - Metadata sync: sources, tables (tracked query fields), scalar fields
 - Native GraphQL query execution
-- Result flattening: root list-of-objects to tabular rows, nested objects as dot-path columns
+- Result flattening: root list-of-objects or aggregate object to tabular rows, nested objects as dot-path columns
 - Stable identifiers across repeated syncs
 - Readable error messages for auth, transport, validation, and timeout failures
+- Limited MBQL query-builder subset (see below)
+
+### MBQL Query Builder Subset
+
+Supported operations:
+
+- Single source table per query
+- Column selection with string field names
+- Filters: `=`, `!=`, `<`, `>`, `<=`, `>=`, `is-null`, `not-null`, `contains`, `starts-with`, `and`, `or`, `not`
+- Order-by (one or more columns, `asc` / `desc`)
+- `limit` and `offset` pagination
+- Aggregates: `count`, `sum`, `avg`, `min`, `max`
+
+Unsupported operations (throw `:hasura.error/unsupported` before any HTTP call):
+
+- Joins (`:joins` key present and non-empty)
+- Custom expressions (`:expressions` key)
+- Breakout / group-by (`:breakout` key)
+- Integer field IDs (require Metabase ID resolution infrastructure)
 
 ### Explicitly Unsupported in MVP
 
@@ -32,12 +51,13 @@ The v0.1.0 release is **native-query-first and read-only**.
 |---------|-------------------|------------|
 | Mutations | Reject at parse time with driver error | `execute-unsupported` |
 | Subscriptions | Reject at parse time with driver error | `execute-unsupported` |
-| Notebook query builder (MBQL) | Return `::driver/unsupported` | `mbql-unsupported` |
-| Joins across objects | Return `::driver/unsupported` | `mbql-unsupported` |
+| MBQL joins across objects | `:hasura.error/unsupported` | `mbql-unsupported` |
+| MBQL expressions / breakout | `:hasura.error/unsupported` | `mbql-unsupported` |
 | Per-user Hasura role mapping | Not supported; one role per connection | n/a |
 | Schema-change operations (DDL) | Not applicable (read-only driver) | n/a |
 | Uploads | Not applicable (read-only driver) | n/a |
 | Arrays in response | Serialised as JSON string; not expanded | `execute-arrays` |
+| Partial GraphQL responses | Treated as failure; `:hasura.error/graphql` thrown | `client-graphql-partial-errors` |
 
 ## Discovery Modes
 
@@ -55,12 +75,12 @@ The driver supports two discovery paths and must work with either:
 
 ## Flattening Rules (Native Query)
 
-1. Response root field must be a list of objects; otherwise an error is returned.
-2. Each top-level object becomes one row.
+1. Response root field must be a list of objects or a single aggregate object; otherwise an error is returned.
+2. Each top-level object in a list becomes one row; a single aggregate object becomes one row.
 3. Nested objects are flattened to dot-path column names: `author.name`.
 4. Arrays inside objects are serialised to a JSON string and stored as a text column.
 5. Null values are preserved as SQL NULL.
-6. Aggregate responses (`_aggregate` shapes) expose scalar fields as columns.
+6. Column order is fixed by the first result object; missing keys in later rows become nil.
 
 ## Versioning
 

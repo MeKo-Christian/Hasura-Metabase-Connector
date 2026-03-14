@@ -47,7 +47,7 @@ help:
 	@echo "    make stack-status      Print container status"
 	@echo ""
 	@echo "  Environment variables"
-	@echo "    HASURA_URL     Hasura base URL  (default: http://localhost:8080)"
+	@echo "    HASURA_URL     Hasura base URL  (default: http://localhost:6080)"
 	@echo "    HASURA_SECRET  Admin secret     (default: local-admin-secret)"
 	@echo ""
 

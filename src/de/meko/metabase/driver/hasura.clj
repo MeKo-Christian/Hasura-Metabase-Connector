@@ -21,7 +21,9 @@
    ;; config has no Metabase deps; safe to require here for the normaliser.
    [de.meko.metabase.driver.hasura.config :as config]
    [de.meko.metabase.driver.hasura.client :as client]
-   [de.meko.metabase.driver.hasura.sync :as sync]))
+   [de.meko.metabase.driver.hasura.sync :as sync]
+   [de.meko.metabase.driver.hasura.execute :as execute]
+   [de.meko.metabase.driver.hasura.query-processor :as query-processor]))
 
 ;; ─────────────────────────────────────────────────────────────────────────────
 ;; Driver registration  (Task 1.2)
@@ -88,14 +90,17 @@
 ;; Query execution  (Phase 3)
 ;; ─────────────────────────────────────────────────────────────────────────────
 
-;; TODO Phase 3 — Task 3.2:
-;; (defmethod driver/execute-reducible-query :hasura [_ query _ respond]
-;;   (execute/execute-reducible-query query respond))
+;; Phase 3 — Task 3.2
+
+(defmethod driver/execute-reducible-query :hasura [_ query _ respond]
+  (execute/execute-reducible-query query respond))
 
 ;; ─────────────────────────────────────────────────────────────────────────────
 ;; Sub-namespace requires
 ;; Uncomment as each phase is implemented.
 ;; ─────────────────────────────────────────────────────────────────────────────
 
-;; TODO Phase 3: (require 'de.meko.metabase.driver.hasura.execute)
-;; TODO Phase 4: (require 'de.meko.metabase.driver.hasura.query-processor)
+;; Phase 4 — Task 4.2
+
+(defmethod driver/mbql->native :hasura [_ query]
+  (query-processor/mbql->native (:query query)))
