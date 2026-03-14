@@ -1,0 +1,88 @@
+name: Integration tests
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+env:
+  HASURA_GRAPHQL_ADMIN_SECRET: ci-admin-secret
+
+jobs:
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    services: {}   # Managed by docker compose below, not as GHA services.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Clojure CLI
+        uses: DeLaGuardo/setup-clojure@12
+        with:
+          cli: latest
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+          key: ${{ runner.os }}-clojure-${{ hashFiles('deps.edn') }}
+          restore-keys: |
+            ${{ runner.os }}-clojure-
+
+      - name: Write .env
+        run: |
+          cat > .env <<EOF
+          POSTGRES_USER=hasura
+          POSTGRES_PASSWORD=hasurapassword
+          POSTGRES_DB=hasura_dev
+          HASURA_GRAPHQL_DATABASE_URL=postgres://hasura:hasurapassword@postgres:5432/hasura_dev
+          HASURA_GRAPHQL_ENABLE_CONSOLE=false
+          HASURA_GRAPHQL_DEV_MODE=false
+          HASURA_GRAPHQL_ENABLED_APIS=metadata,graphql,config
+          HASURA_GRAPHQL_ADMIN_SECRET=${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+          HASURA_GRAPHQL_LOG_LEVEL=warn
+          MB_DB_TYPE=h2
+          MB_DB_FILE=/metabase-data/metabase.db
+          MB_PLUGINS_DIR=/plugins
+          EOF
+
+      - name: Start Docker Compose stack (Postgres + Hasura only)
+        run: docker compose up -d postgres hasura
+
+      - name: Wait for Hasura health
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/healthz && echo " Hasura ready." && break
+            echo "Waiting... ($i/30)"
+            sleep 4
+          done
+
+      - name: Verify seed and metadata
+        run: make stack-seed
+        env:
+          HASURA_URL: http://localhost:8080
+          HASURA_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+
+      - name: Download deps
+        run: clojure -A:test-integration -P
+
+      - name: Run integration tests
+        run: clojure -M:test-integration
+        env:
+          HASURA_URL: http://localhost:8080
+          HASURA_SECRET: ${{ env.HASURA_GRAPHQL_ADMIN_SECRET }}
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
