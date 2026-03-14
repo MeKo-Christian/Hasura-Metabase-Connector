@@ -1,0 +1,11 @@
+- name: default
+  kind: postgres
+  configuration:
+    connection_info:
+      database_url:
+        from_env: HASURA_GRAPHQL_DATABASE_URL
+      pool_settings:
+        idle_timeout: 180
+        max_connections: 25
+        retries: 1
+  tables: "!include default/tables/tables.yaml"

@@ -1,0 +1,21 @@
+# Clojure
+target/
+.cpcache/
+.clj-kondo/.cache/
+.lsp/
+
+# Environment
+.env
+
+# Editor
+.idea/
+*.iml
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+
+# Metabase dev data
+dev/metabase-data/

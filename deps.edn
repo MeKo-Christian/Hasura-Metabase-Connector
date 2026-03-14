@@ -1,0 +1,70 @@
+{:paths ["src" "resources"]
+
+ :deps
+ {org.clojure/clojure {:mvn/version "1.11.3"}}
+
+ :aliases
+ {;; ─────────────────────────────────────────────────────────────────────────
+  ;; dev: compile and test against a local Metabase checkout.
+  ;;
+  ;; Set METABASE_DIR to your Metabase OSS checkout at tag v0.59.0.
+  ;; Example:
+  ;;   export METABASE_DIR=../metabase
+  ;;   make deps
+  ;; ─────────────────────────────────────────────────────────────────────────
+  :dev
+  {:extra-paths ["test" "dev"]
+   :extra-deps
+   {;; HTTP client — same lib Metabase bundles; safe to use at runtime.
+    clj-http/clj-http            {:mvn/version "3.12.3"}
+    ;; JSON — Cheshire is the standard in the Metabase ecosystem.
+    cheshire/cheshire             {:mvn/version "5.12.0"}
+    ;; HTTP stubbing for unit tests.
+    clj-http-fake/clj-http-fake  {:mvn/version "1.0.4"}
+    ;; Test assertions.
+    nubank/matcher-combinators    {:mvn/version "3.9.1"}}}
+
+  ;; ─────────────────────────────────────────────────────────────────────────
+  ;; test: run tests with cognitect test-runner.
+  ;; ─────────────────────────────────────────────────────────────────────────
+  :test
+  {:extra-paths ["test"]
+   :extra-deps
+   {io.github.cognitect-labs/test-runner
+    {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+    clj-http/clj-http            {:mvn/version "3.12.3"}
+    cheshire/cheshire             {:mvn/version "5.12.0"}
+    clj-http-fake/clj-http-fake  {:mvn/version "1.0.4"}
+    nubank/matcher-combinators    {:mvn/version "3.9.1"}}
+   :main-opts ["-m" "cognitect.test-runner"
+               "--dir" "test"]}
+
+  ;; Integration tests only — requires the Docker stack to be running.
+  ;; Lives in test-integration/ so it is never picked up by :test.
+  :test-integration
+  {:extra-paths ["test-integration"]
+   :extra-deps
+   {io.github.cognitect-labs/test-runner
+    {:git/tag "v0.5.1" :git/sha "dfb30dd"}
+    clj-http/clj-http            {:mvn/version "3.12.3"}
+    cheshire/cheshire             {:mvn/version "5.12.0"}
+    nubank/matcher-combinators    {:mvn/version "3.9.1"}}
+   :main-opts ["-m" "cognitect.test-runner"
+               "--dir" "test-integration"]}
+
+  ;; ─────────────────────────────────────────────────────────────────────────
+  ;; build: produce the plugin JAR via tools.build.
+  ;; Run: clojure -T:build jar
+  ;; ─────────────────────────────────────────────────────────────────────────
+  :build
+  {:deps
+   {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
+   :ns-default build}
+
+  ;; ─────────────────────────────────────────────────────────────────────────
+  ;; lint: static analysis with clj-kondo.
+  ;; ─────────────────────────────────────────────────────────────────────────
+  :lint
+  {:extra-deps
+   {clj-kondo/clj-kondo {:mvn/version "2024.03.13"}}
+   :main-opts ["-m" "clj-kondo.main" "--lint" "src" "test" "test-integration"]}}}

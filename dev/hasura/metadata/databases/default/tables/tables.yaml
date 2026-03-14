@@ -1,0 +1,117 @@
+# Tracked tables and their relationships for the integration seed schema.
+# Order matters for !include resolution; keep alphabetical for determinism.
+
+- table:
+    schema: public
+    name: article_stats
+  # View — no insert/update/delete permissions needed; read-only by nature.
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+
+- table:
+    schema: public
+    name: article_tags
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+  object_relationships:
+    - name: article
+      using:
+        foreign_key_constraint_on: article_id
+    - name: tag
+      using:
+        foreign_key_constraint_on: tag_id
+
+- table:
+    schema: public
+    name: articles
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+  object_relationships:
+    # Object relationship: articles.author_id -> authors.id  (many articles to one author)
+    - name: author
+      using:
+        foreign_key_constraint_on: author_id
+  array_relationships:
+    # Array relationship: articles -> article_tags  (one article has many tags)
+    - name: article_tags
+      using:
+        foreign_key_constraint_on:
+          column: article_id
+          table:
+            schema: public
+            name: article_tags
+
+- table:
+    schema: public
+    name: authors
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+  array_relationships:
+    # Array relationship: authors -> articles  (one author has many articles)
+    - name: articles
+      using:
+        foreign_key_constraint_on:
+          column: author_id
+          table:
+            schema: public
+            name: articles
+
+- table:
+    schema: public
+    name: order_items
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+  object_relationships:
+    - name: order
+      using:
+        foreign_key_constraint_on: order_id
+
+- table:
+    schema: public
+    name: orders
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+  array_relationships:
+    # Array relationship: orders -> order_items  (aggregate-heavy)
+    - name: order_items
+      using:
+        foreign_key_constraint_on:
+          column: order_id
+          table:
+            schema: public
+            name: order_items
+
+- table:
+    schema: public
+    name: tags
+  configuration:
+    column_config: {}
+    custom_column_names: {}
+    custom_name: null
+    custom_root_fields: {}
+  array_relationships:
+    - name: article_tags
+      using:
+        foreign_key_constraint_on:
+          column: tag_id
+          table:
+            schema: public
+            name: article_tags

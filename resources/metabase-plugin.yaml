@@ -1,0 +1,59 @@
+info:
+  name: Metabase Hasura Driver
+  version: 0.1.0-SNAPSHOT
+  description: >-
+    Community driver for Hasura GraphQL Engine. Read-only, native-query-first.
+    Supports connection testing, metadata sync via GraphQL introspection, and
+    native GraphQL query execution with tabular result flattening.
+
+driver:
+  name: hasura
+  display-name: Hasura
+  lazy-load: true
+
+  connection-properties:
+    - name: endpoint
+      display-name: GraphQL Endpoint URL
+      placeholder: "https://your-hasura.example.com"
+      helper-text: Base URL of your Hasura instance (without /v1/graphql suffix).
+      required: true
+      type: string
+
+    - name: admin-secret
+      display-name: "Admin Secret (X-Hasura-Admin-Secret)"
+      helper-text: Leave empty if using a bearer token or if Hasura is open.
+      required: false
+      type: password
+
+    - name: access-token
+      display-name: Bearer Token
+      helper-text: "JWT or PAT passed as Authorization: Bearer <token>. Used when admin-secret is not set."
+      required: false
+      type: password
+
+    - name: role
+      display-name: "Hasura Role (X-Hasura-Role)"
+      placeholder: admin
+      helper-text: Optional. Sets X-Hasura-Role on every request.
+      required: false
+      type: string
+
+    - name: use-metadata-api
+      display-name: Use Metadata API for enriched discovery
+      helper-text: >-
+        When enabled, the driver calls /v1/metadata for richer schema names.
+        Requires admin credentials. Falls back to introspection-only automatically.
+      required: false
+      type: boolean
+      default: true
+
+    - name: request-timeout-ms
+      display-name: Request Timeout (ms)
+      placeholder: "30000"
+      required: false
+      type: integer
+      default: 30000
+
+init:
+  - step: load-namespace
+    namespace: de.meko.metabase.driver.hasura

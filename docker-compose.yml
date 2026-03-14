@@ -1,0 +1,84 @@
+# Local integration stack for Hasura-Metabase-Connector development.
+# Pins Hasura at the minimum supported version (2.27.0) to prove floor compatibility.
+#
+# Usage:
+#   make stack-up       — start all services
+#   make stack-seed     — apply Hasura tracking after first start
+#   make stack-reset    — full teardown + fresh seed
+#   make stack-down     — stop and remove all containers + volumes
+#
+# Services:
+#   postgres   — database backing Hasura (host port 6432)
+#   hasura     — Hasura GraphQL Engine v2.27.0 (host port 6080)
+#   metabase   — Metabase v0.59.0 (host port 6300)
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hasura}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hasurapassword}
+      POSTGRES_DB: ${POSTGRES_DB:-hasura_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./dev/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "6432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hasura} -d ${POSTGRES_DB:-hasura_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  hasura:
+    # cli-migrations-v3 automatically applies migrations and metadata at startup.
+    image: hasura/graphql-engine:v2.27.0.cli-migrations-v3
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: ${HASURA_GRAPHQL_DATABASE_URL:-postgres://hasura:hasurapassword@postgres:5432/hasura_dev}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: ${HASURA_GRAPHQL_ENABLE_CONSOLE:-true}
+      HASURA_GRAPHQL_DEV_MODE: ${HASURA_GRAPHQL_DEV_MODE:-true}
+      HASURA_GRAPHQL_ENABLED_APIS: ${HASURA_GRAPHQL_ENABLED_APIS:-metadata,graphql,config}
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET:-local-admin-secret}
+      HASURA_GRAPHQL_LOG_LEVEL: ${HASURA_GRAPHQL_LOG_LEVEL:-warn}
+      # Tell the cli-migrations image where metadata lives.
+      HASURA_GRAPHQL_METADATA_DIR: /hasura-metadata
+    volumes:
+      - ./dev/hasura/metadata:/hasura-metadata:ro
+    ports:
+      - "6080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/healthz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  metabase:
+    image: metabase/metabase:v0.59.2
+    restart: unless-stopped
+    depends_on:
+      hasura:
+        condition: service_healthy
+    environment:
+      MB_DB_TYPE: ${MB_DB_TYPE:-h2}
+      MB_DB_FILE: ${MB_DB_FILE:-/metabase-data/metabase.db}
+      MB_PLUGINS_DIR: ${MB_PLUGINS_DIR:-/plugins}
+      JAVA_OPTS: "-Xmx1g"
+    volumes:
+      - metabase_data:/metabase-data
+      - ./target:/plugins:ro      # Mount built plugin JAR here after `make build`
+    ports:
+      - "6300:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+volumes:
+  postgres_data:
+  metabase_data:
