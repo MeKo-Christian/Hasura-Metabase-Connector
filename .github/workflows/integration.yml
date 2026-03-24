@@ -14,7 +14,7 @@ jobs:
     name: Integration tests
     runs-on: ubuntu-latest
 
-    services: {}   # Managed by docker compose below, not as GHA services.
+    services: {} # Managed by docker compose below, not as GHA services.
 
     steps:
       - uses: actions/checkout@v4

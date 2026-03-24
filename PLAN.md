@@ -102,6 +102,7 @@ Acceptance criteria:
 - [x] Verify the plugin loads from the Metabase plugins directory. → log confirms "Registering lazy loading driver :hasura..." + "Registered driver :hasura 🚚"
 
 Notes:
+
 - Extracted `connection-config` and `guard-query!` into `config.clj` (no Metabase deps) to enable unit testing.
 - Fixed YAML: `:` inside display-name string values must not appear unquoted.
 - Fixed Metabase image tag: latest is `v0.59.2` (not `v0.59.0`). Updated docker-compose.yml and COMPATIBILITY.md.
@@ -120,6 +121,7 @@ Acceptance criteria:
 - [x] Reject invalid or incomplete connection settings early. → config/validate-config! (nil/blank endpoint, non-http scheme; called before every HTTP request)
 
 Notes:
+
 - Fixed auth-priority bug in the previous build-headers sketch: admin-secret and access-token were both being sent simultaneously. Now mutually exclusive.
 - client.clj delegates header construction to config/request-headers (keeping HTTP layer free of business logic).
 - 4 client_test.clj header tests are now real assertions (were pending).
@@ -138,6 +140,7 @@ Acceptance criteria:
 - [x] Add an integration test against the Docker stack. → test/…/integration_connection_test.clj
 
 Notes:
+
 - graphql-post and ping! implemented in client.clj; metadata-post stays commented for Phase 2 (Task 2.1).
 - can-connect? in hasura.clj now delegates: validate-config! → ping!.
 - fixtures.clj missing cheshire require was fixed.
@@ -145,7 +148,7 @@ Notes:
 
 Acceptance criteria:
 
-- [x] Metabase `Test connection` succeeds against a valid Hasura instance. → can-connect? calls ping! which POSTs { __typename }
+- [x] Metabase `Test connection` succeeds against a valid Hasura instance. → can-connect? calls ping! which POSTs { \_\_typename }
 - [x] Auth failures, network failures, and invalid endpoint failures are distinguishable in tests. → unit tests cover :hasura.error/auth, :hasura.error/timeout, :hasura.error/unreachable separately
 
 ## Phase 2: Metadata Discovery and Sync
@@ -158,6 +161,7 @@ Acceptance criteria:
 - [x] Add unit tests for header injection, timeout propagation, and error normalization.
 
 Notes:
+
 - Uncommented and activated `metadata-post` in client.clj; shares `normalise-response` with `graphql-post`.
 - Added 4 unit tests: `client-metadata-post-success`, `client-metadata-post-auth-failure`, `client-metadata-post-server-error`, `client-timeout-propagated`.
 - `client-timeout-propagated` uses `with-redefs` on `clj-http.client/post`, returns pre-parsed body map to bypass JSON coercion middleware.
@@ -178,6 +182,7 @@ Acceptance criteria:
 - [x] Create stable identifiers and names for discovered objects. → `stable-table-id` produces `"schema.table"` strings
 
 Notes:
+
 - `unwrap-type` follows ofType chains through NON_NULL/LIST wrappers to reach the leaf kind/name.
 - `parse-schema` builds a type-index (O(1) lookup) then maps root query fields to the internal `:hasura/schema` structure.
 - `fetch-schema` composes `graphql-post` → `get-in [:data :__schema]` → `parse-schema`.
@@ -197,6 +202,7 @@ Acceptance criteria:
 - [x] Add tests for both metadata-enabled and metadata-disabled paths. → 8 unit tests + 4 integration tests
 
 Notes:
+
 - `fetch-metadata` swallows `:hasura.error/auth` (role-restricted Metadata API) and re-throws all other errors.
 - `enrich-with-metadata` is pure; tables tracked in introspection but absent from metadata are excluded (metadata defines what is tracked).
 - Integration test file: `test-integration/…/integration_introspection_test.clj`.
@@ -214,6 +220,7 @@ Acceptance criteria:
 - [x] Preserve deterministic ordering to reduce sync churn. → sets used; `describe-database*` / `describe-table*` output is content-stable
 
 Notes:
+
 - `sync.clj` has no Metabase deps — pure helpers testable without the plugin classloader.
 - `describe-database [cfg]` and `describe-table [cfg name]` are the public API, composing the full introspection+metadata pipeline then calling the pure helpers.
 - Multimethods wired in `hasura.clj`; sync namespace required there.
@@ -232,6 +239,7 @@ Acceptance criteria:
 - [x] Add negative tests for role-filtered schemas and missing fields. → role-restricted returns `{:tables #{}}`, unknown table returns `{:fields #{}}`
 
 Notes:
+
 - **Bug found and fixed:** Hasura 2.x returns HTTP 400 when `X-Hasura-Role` is sent to `/v1/metadata`. `fetch-metadata` now strips `:role` from the config before calling `metadata-post`. Added regression unit test `fetch-metadata-strips-role-from-request`.
 
 Acceptance criteria:
@@ -273,6 +281,7 @@ Acceptance criteria:
 - [x] Add tests for scalar, nested-object, aggregate, null, and array cases. → execute_test.clj (8 flatten-rows tests)
 
 Notes:
+
 - Map root values (aggregate queries) are wrapped in `[v]` before flattening → single-row result.
 - Column order is fixed by the first row; missing keys in later rows become nil.
 - Bug fixed in test: Cheshire parses JSON arrays as lists, not vectors; `sequential?` used instead of `vector?`.
@@ -316,6 +325,7 @@ Acceptance criteria:
 - [x] Keep compilation isolated from HTTP execution so it can be tested independently. → `query-processor.clj` has no HTTP calls; pure functions only
 
 Notes:
+
 - `field-name` extracts string name from `[:field "name" opts]`; throws on integer IDs (requires Metabase resolution infrastructure not available here).
 - `mbql->native` multimethod wired in `hasura.clj` via `(defmethod driver/mbql->native :hasura [_ query] (query-processor/mbql->native (:query query)))`.
 
@@ -332,6 +342,7 @@ Acceptance criteria:
 - [x] Add count, sum, avg, min, and max support through Hasura aggregate fields. → `render-aggregate-fields` groups same-type aggregations; `render-aggregate-query` uses `table_aggregate` suffix
 
 Notes:
+
 - Text filters: `contains` → `_ilike "%v%"`, `starts-with` → `_ilike "v%"`.
 - Boolean combinators: `:and` → `_and`, `:or` → `_or`, `:not` → `_not`.
 - Multiple fields of the same aggregate type are grouped into one block (e.g. `sum { unit_price discount }`).
@@ -359,7 +370,7 @@ Acceptance criteria:
 - [x] Add unit tests for translation output. → `query_processor_test.clj` (40 tests: field-name, validate, render-filter, render-aggregate-fields, render-select-query, render-aggregate-query, mbql->native)
 - [x] Add integration tests for browse, filter, sort, paginate, and aggregate flows. → `integration_query_processor_test.clj` (13 tests covering simple browse, equality/comparison/null/and filters, order-by, limit, offset, count, sum+avg)
 - [x] Add Metabase driver-harness coverage where applicable. → not implemented; driver-harness requires a running Metabase instance and is deferred
-- [x] Capture baseline snapshots or structured assertions for stable generated GraphQL. → `mbql-native-stable-output` and exact-string assertions in render-* tests
+- [x] Capture baseline snapshots or structured assertions for stable generated GraphQL. → `mbql-native-stable-output` and exact-string assertions in render-\* tests
 
 Acceptance criteria:
 
@@ -388,6 +399,7 @@ Acceptance criteria:
 - [x] Add tests for slow responses, partial GraphQL errors, and malformed payloads. → `client-graphql-partial-errors` added: verifies that responses with both `:data` and `:errors` throw `:hasura.error/graphql` (strict MVP behavior). Malformed GraphQL already tested in integration_execute_test.clj.
 
 Notes:
+
 - Partial GraphQL response behavior (strict: any `:errors` presence throws) is now documented in COMPATIBILITY.md and README.md Known Limitations.
 
 Acceptance criteria:
@@ -403,6 +415,7 @@ Acceptance criteria:
 - [x] Add release checks that block shipping when compatibility or tests regress. → `build` and `integration` both have `needs: unit`; a failing unit run blocks downstream jobs.
 
 Notes:
+
 - **Bug fixed**: CI integration step was passing `HASURA_TEST_URL`/`HASURA_TEST_SECRET` but test code reads `HASURA_URL`/`HASURA_SECRET`. Fixed to `HASURA_URL: http://localhost:8080` and `HASURA_SECRET`. Without this fix, CI integration tests would silently hit the wrong port (6080 default instead of 8080 CI default).
 - **Makefile fix**: help text showed wrong default port for HASURA_URL (8080 → 6080).
 
@@ -419,6 +432,7 @@ Acceptance criteria:
 - [x] Document the local development flow, test commands, and Docker stack usage. → README.md Quick Start + Build/Test/Lint + Development Workflow; docs/DEV_SETUP.md; docs/TEST_STRATEGY.md.
 
 Notes:
+
 - README.md updated: project status (all phases complete), MBQL support section added, query_processor.clj described accurately, Known Limitations updated, Roadmap updated.
 - COMPATIBILITY.md updated: MBQL subset documented, flattening rule 1 corrected (list OR aggregate map), partial-errors behavior added to unsupported table.
 
@@ -435,6 +449,7 @@ Acceptance criteria:
 - [x] Publish release notes with compatibility constraints and known gaps. → RELEASE_NOTES.md created for v0.1.0.
 
 Notes:
+
 - Automated test matrix confirmed passing by user. Manual smoke test in a live Metabase instance is the remaining operator validation step.
 
 Acceptance criteria:

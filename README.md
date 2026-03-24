@@ -13,8 +13,6 @@ MBQL query-builder subset. See [PLAN.md](PLAN.md) for the full roadmap.
 
 ### Current state of the codebase
 
-Implemented in v0.1.0:
-
 - Plugin packaging as a Metabase community driver JAR
 - Driver registration and display in Metabase as `Hasura`
 - Connection configuration and `Test connection` behavior
@@ -28,21 +26,12 @@ Implemented in v0.1.0:
 - Limited MBQL query-builder support (select, filter, sort, paginate, aggregate)
 - Unit, integration, build, and lint automation
 
-Not in scope for v0.1.0:
+Not in scope for now:
 
 - Joins across related objects in the query builder
 - Variables for native GraphQL queries
 - Mutations and subscriptions
 - Per-user role mapping
-
-### Roadmap status from the plan
-
-- Phase 0: complete
-- Phase 1: complete
-- Phase 2: complete
-- Phase 3: complete
-- Phase 4: complete
-- Phase 5: complete
 
 ## Scope
 
@@ -154,9 +143,9 @@ Example native GraphQL query:
 
 Expected tabular shape:
 
-| id | title                   | published | author.id | author.name |
-| -- | ----------------------- | --------- | --------- | ----------- |
-| 1  | Introduction to GraphQL | true      | 1         | Alice Smith |
+| id  | title                   | published | author.id | author.name |
+| --- | ----------------------- | --------- | --------- | ----------- |
+| 1   | Introduction to GraphQL | true      | 1         | Alice Smith |
 
 ## Query Builder (MBQL) Support
 
@@ -173,12 +162,12 @@ The driver supports a limited subset of the Metabase notebook query builder.
 
 ### Unsupported MBQL features (fail fast with a clear error)
 
-| Feature | Error type |
-|---------|-----------|
-| Joins | `:hasura.error/unsupported` with `:feature :joins` |
-| Custom expressions | `:hasura.error/unsupported` with `:feature :expressions` |
-| Breakout / group-by | `:hasura.error/unsupported` with `:feature :breakout` |
-| Integer field IDs | `:hasura.error/unsupported` (require Metabase ID resolution) |
+| Feature             | Error type                                                   |
+| ------------------- | ------------------------------------------------------------ |
+| Joins               | `:hasura.error/unsupported` with `:feature :joins`           |
+| Custom expressions  | `:hasura.error/unsupported` with `:feature :expressions`     |
+| Breakout / group-by | `:hasura.error/unsupported` with `:feature :breakout`        |
+| Integer field IDs   | `:hasura.error/unsupported` (require Metabase ID resolution) |
 
 All unsupported patterns are detected before any HTTP call is made.
 
@@ -292,14 +281,14 @@ followed by a Metabase restart is the normal local plugin workflow.
 When you add the `Hasura` database in the local Docker stack, use values that
 Metabase can resolve from inside the container network.
 
-| Field                | Value for local stack   |
-| -------------------- | ----------------------- |
-| GraphQL Endpoint URL | `http://hasura:8080`    |
-| Admin Secret         | `local-admin-secret`    |
-| Bearer Token         | leave empty             |
-| Hasura Role          | optional                |
-| Use Metadata API     | enabled                 |
-| Request Timeout (ms) | `30000`                 |
+| Field                | Value for local stack |
+| -------------------- | --------------------- |
+| GraphQL Endpoint URL | `http://hasura:8080`  |
+| Admin Secret         | `local-admin-secret`  |
+| Bearer Token         | leave empty           |
+| Hasura Role          | optional              |
+| Use Metadata API     | enabled               |
+| Request Timeout (ms) | `30000`               |
 
 ### Connection properties
 

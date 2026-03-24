@@ -44,20 +44,20 @@
 
 ## What Must Hit a Real Hasura Instance
 
-| Test scenario | Real Hasura required? |
-|---------------|----------------------|
-| Connection test (success) | Yes |
-| Connection test (auth failure) | Yes (use wrong secret) |
-| Connection test (unreachable) | No (fixture: connection refused) |
-| Schema sync (introspection-only) | Yes |
-| Schema sync (metadata-enriched) | Yes |
-| Schema sync (metadata disabled) | Yes |
-| Native query execution | Yes |
-| Native query timeout | No (fixture: slow server) |
-| Native query mutation rejection | No (pure parse check) |
-| Result flattening | No (fixture: response JSON) |
-| Type mapping | No (pure function) |
-| MBQL translation output | No (pure function) |
+| Test scenario                    | Real Hasura required?            |
+| -------------------------------- | -------------------------------- |
+| Connection test (success)        | Yes                              |
+| Connection test (auth failure)   | Yes (use wrong secret)           |
+| Connection test (unreachable)    | No (fixture: connection refused) |
+| Schema sync (introspection-only) | Yes                              |
+| Schema sync (metadata-enriched)  | Yes                              |
+| Schema sync (metadata disabled)  | Yes                              |
+| Native query execution           | Yes                              |
+| Native query timeout             | No (fixture: slow server)        |
+| Native query mutation rejection  | No (pure parse check)            |
+| Result flattening                | No (fixture: response JSON)      |
+| Type mapping                     | No (pure function)               |
+| MBQL translation output          | No (pure function)               |
 
 ## Fixture Strategy
 
@@ -108,18 +108,18 @@ test/
 
 ## CI Commands
 
-| Command | Description |
-|---------|-------------|
-| `make deps` | Download all Clojure deps |
-| `make build` | Compile and produce plugin JAR |
-| `make test-unit` | Run unit tests (no Docker required) |
+| Command                 | Description                                     |
+| ----------------------- | ----------------------------------------------- |
+| `make deps`             | Download all Clojure deps                       |
+| `make build`            | Compile and produce plugin JAR                  |
+| `make test-unit`        | Run unit tests (no Docker required)             |
 | `make test-integration` | Run integration tests (Docker stack must be up) |
-| `make test-all` | Run unit + integration |
-| `make stack-up` | Start Docker Compose stack |
-| `make stack-seed` | Apply seed data and Hasura tracking |
-| `make stack-reset` | Tear down and recreate stack with fresh seed |
-| `make stack-down` | Stop and remove all containers |
-| `make lint` | Run clj-kondo static analysis |
+| `make test-all`         | Run unit + integration                          |
+| `make stack-up`         | Start Docker Compose stack                      |
+| `make stack-seed`       | Apply seed data and Hasura tracking             |
+| `make stack-reset`      | Tear down and recreate stack with fresh seed    |
+| `make stack-down`       | Stop and remove all containers                  |
+| `make lint`             | Run clj-kondo static analysis                   |
 
 ## Regression Test Coverage Targets
 

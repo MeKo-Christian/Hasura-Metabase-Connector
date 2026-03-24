@@ -2,12 +2,12 @@
 
 ## Supported Versions
 
-| Component | Minimum | Pinned in dev stack | Notes |
-|-----------|---------|---------------------|-------|
-| Metabase  | 59      | v0.59.2             | OSS; Enterprise builds same plugin ABI |
-| Hasura    | 2.27.0  | 2.27.0              | Tested against the minimum to prove floor |
-| PostgreSQL (backing Hasura) | 13 | 15 | Not user-facing; affects seed schema only |
-| Java (plugin host) | 11 | 21 | Metabase embeds its own JVM |
+| Component                   | Minimum | Pinned in dev stack | Notes                                     |
+| --------------------------- | ------- | ------------------- | ----------------------------------------- |
+| Metabase                    | 59      | v0.59.2             | OSS; Enterprise builds same plugin ABI    |
+| Hasura                      | 2.27.0  | 2.27.0              | Tested against the minimum to prove floor |
+| PostgreSQL (backing Hasura) | 13      | 15                  | Not user-facing; affects seed schema only |
+| Java (plugin host)          | 11      | 21                  | Metabase embeds its own JVM               |
 
 ## MVP Scope
 
@@ -47,17 +47,17 @@ Unsupported operations (throw `:hasura.error/unsupported` before any HTTP call):
 
 ### Explicitly Unsupported in MVP
 
-| Feature | Failure behaviour | Test class |
-|---------|-------------------|------------|
-| Mutations | Reject at parse time with driver error | `execute-unsupported` |
-| Subscriptions | Reject at parse time with driver error | `execute-unsupported` |
-| MBQL joins across objects | `:hasura.error/unsupported` | `mbql-unsupported` |
-| MBQL expressions / breakout | `:hasura.error/unsupported` | `mbql-unsupported` |
-| Per-user Hasura role mapping | Not supported; one role per connection | n/a |
-| Schema-change operations (DDL) | Not applicable (read-only driver) | n/a |
-| Uploads | Not applicable (read-only driver) | n/a |
-| Arrays in response | Serialised as JSON string; not expanded | `execute-arrays` |
-| Partial GraphQL responses | Treated as failure; `:hasura.error/graphql` thrown | `client-graphql-partial-errors` |
+| Feature                        | Failure behaviour                                  | Test class                      |
+| ------------------------------ | -------------------------------------------------- | ------------------------------- |
+| Mutations                      | Reject at parse time with driver error             | `execute-unsupported`           |
+| Subscriptions                  | Reject at parse time with driver error             | `execute-unsupported`           |
+| MBQL joins across objects      | `:hasura.error/unsupported`                        | `mbql-unsupported`              |
+| MBQL expressions / breakout    | `:hasura.error/unsupported`                        | `mbql-unsupported`              |
+| Per-user Hasura role mapping   | Not supported; one role per connection             | n/a                             |
+| Schema-change operations (DDL) | Not applicable (read-only driver)                  | n/a                             |
+| Uploads                        | Not applicable (read-only driver)                  | n/a                             |
+| Arrays in response             | Serialised as JSON string; not expanded            | `execute-arrays`                |
+| Partial GraphQL responses      | Treated as failure; `:hasura.error/graphql` thrown | `client-graphql-partial-errors` |
 
 ## Discovery Modes
 

@@ -1,4 +1,4 @@
-.PHONY: help deps build clean \
+.PHONY: help deps build clean fmt fmt-check \
         stack-up stack-seed stack-reset stack-down stack-status \
         test-unit test-integration test-all lint
 
@@ -33,6 +33,8 @@ help:
 	@echo "    make build             Compile and produce plugin JAR in target/"
 	@echo "    make clean             Delete target/ directory"
 	@echo "    make lint              Run clj-kondo static analysis"
+	@echo "    make fmt               Format Markdown, YAML, and JSON with Prettier"
+	@echo "    make fmt-check         Check formatting (CI-friendly, no writes)"
 	@echo ""
 	@echo "  Tests"
 	@echo "    make test-unit         Run unit tests (no Docker required)"
@@ -66,6 +68,14 @@ clean:
 
 lint:
 	$(CLOJURE) -M:lint
+
+FMT_GLOB := "**/*.{md,yaml,yml,json}"
+
+fmt:
+	prettier --write $(FMT_GLOB)
+
+fmt-check:
+	prettier --check $(FMT_GLOB)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests

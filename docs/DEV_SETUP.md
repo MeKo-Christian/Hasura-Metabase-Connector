@@ -2,15 +2,15 @@
 
 ## Prerequisites
 
-| Tool | Version | Install |
-|------|---------|---------|
-| Java | 11+ (21 recommended) | [adoptium.net](https://adoptium.net) |
-| Clojure CLI | latest | [clojure.org/guides/install_clojure](https://clojure.org/guides/install_clojure) |
-| Docker + Compose | Docker 24+ | [docs.docker.com](https://docs.docker.com/get-docker/) |
+| Tool             | Version              | Install                                                                          |
+| ---------------- | -------------------- | -------------------------------------------------------------------------------- |
+| Java             | 11+ (21 recommended) | [adoptium.net](https://adoptium.net)                                             |
+| Clojure CLI      | latest               | [clojure.org/guides/install_clojure](https://clojure.org/guides/install_clojure) |
+| Docker + Compose | Docker 24+           | [docs.docker.com](https://docs.docker.com/get-docker/)                           |
 
 ## Build the plugin JAR
 
-No Metabase checkout is required to build.  The JAR ships `.clj` source files;
+No Metabase checkout is required to build. The JAR ships `.clj` source files;
 Metabase compiles them at plugin load time using its own JVM classloader.
 
 ```bash
@@ -68,6 +68,7 @@ METABASE_DIR=../metabase clojure -A:dev -Sdeps '{:deps {metabase/metabase-core {
 ```
 
 Inside the REPL:
+
 ```clojure
 ;; Load the driver (Metabase must be initialised first in a real plugin host)
 (require 'de.meko.metabase.driver.hasura)
@@ -92,11 +93,11 @@ open http://localhost:6300
 
 Connection settings for the local stack:
 
-| Field | Value |
-|-------|-------|
-| Endpoint | `http://hasura:8080` (from inside Docker network) |
-| Admin Secret | `local-admin-secret` |
-| Use Metadata API | ✓ |
+| Field            | Value                                             |
+| ---------------- | ------------------------------------------------- |
+| Endpoint         | `http://hasura:8080` (from inside Docker network) |
+| Admin Secret     | `local-admin-secret`                              |
+| Use Metadata API | ✓                                                 |
 
 ## Stack management
 

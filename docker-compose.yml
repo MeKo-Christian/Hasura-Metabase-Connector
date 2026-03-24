@@ -26,7 +26,11 @@ services:
     ports:
       - "6432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hasura} -d ${POSTGRES_DB:-hasura_dev}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-hasura} -d ${POSTGRES_DB:-hasura_dev}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -70,7 +74,7 @@ services:
       JAVA_OPTS: "-Xmx1g"
     volumes:
       - metabase_data:/metabase-data
-      - ./target:/plugins:ro      # Mount built plugin JAR here after `make build`
+      - ./target:/plugins:ro # Mount built plugin JAR here after `make build`
     ports:
       - "6300:3000"
     healthcheck:
