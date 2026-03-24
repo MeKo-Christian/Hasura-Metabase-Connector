@@ -1,0 +1,4 @@
+target/
+.trunk/
+.cpcache/
+.clj-kondo/
